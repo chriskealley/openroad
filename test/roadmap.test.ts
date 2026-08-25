@@ -39,3 +39,45 @@ test("selects highest-priority eligible ready item amid concurrent active work",
   assert.deepEqual(errors, []);
   assert.deepEqual(eligibleReadyItems(items).map(item => item.id), ["RM-004", "RM-003"]);
 });
+
+test("an empty field does not absorb the prose that follows it", () => {
+  const { items, errors } = parseRoadmap(`### RM-001 — Empty trailing field
+
+**Status:** planned
+**Priority:** 100
+**Depends on:**
+
+Describe the outcome, scope, and acceptance signal here.
+`);
+  assert.deepEqual(errors, []);
+  assert.deepEqual(items[0].dependsOn, []);
+});
+
+test("commented-out examples are not parsed as roadmap items", () => {
+  const { items, errors } = parseRoadmap(`### RM-001 — Real item
+
+**Status:** planned
+**Priority:** 100
+
+<!-- Active example:
+### RM-002 — Example active outcome
+
+**Status:** active
+**Work state:** available
+**Priority:** 200
+**Change:** add-example-outcome
+**Depends on:** RM-001
+**Blocked by:**
+-->
+`);
+  assert.deepEqual(errors, []);
+  assert.deepEqual(items.map(item => item.id), ["RM-001"]);
+});
+
+test("the shipped roadmap template validates cleanly", async () => {
+  const { validateRoadmap } = await import("../src/roadmap.js");
+  const { join } = await import("node:path");
+  const { errors, items } = await validateRoadmap(join(process.cwd(), "templates/roadmap.md"));
+  assert.deepEqual(errors, []);
+  assert.deepEqual(items.map(item => item.id), ["RM-001"]);
+});

@@ -2,6 +2,7 @@
   "name": "@chriskealley/openroad",
   "version": "0.1.0",
   "description": "A roadmap companion for OpenSpec projects",
+  "author": "Chris Kealley",
   "type": "module",
   "bin": { "openroad": "dist/src/cli.js" },
   "files": ["dist/src", "templates", "skills", "README.md", "LICENSE"],
@@ -26,5 +27,6 @@
     "@types/node": "^24.3.0",
     "typescript": "^5.9.2"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": { "access": "public" }
 }

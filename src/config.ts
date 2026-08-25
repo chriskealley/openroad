@@ -27,7 +27,7 @@ export async function mergeConfig(path: string): Promise<void> {
   if (!(doc.contents instanceof YAMLMap)) throw new Error(`Invalid YAML in ${path}: root must be a mapping`);
   const context = doc.get("context");
   if (context == null) doc.set("context", CONTEXT_LINE);
-  else if (typeof context === "string" && !context.includes(CONTEXT_LINE)) doc.set("context", `${context.trimEnd()}\n${CONTEXT_LINE}`);
+  else if (typeof context === "string" && !context.includes(CONTEXT_LINE)) doc.set("context", `${context.trimEnd()}\n${CONTEXT_LINE}${context.endsWith("\n") ? "\n" : ""}`);
   else if (typeof context !== "string") throw new Error("Cannot merge config: context must be a string");
   addUnique(doc, ["rules", "proposal"], PROPOSAL_RULE);
   addUnique(doc, ["rules", "tasks"], TASKS_RULE);
@@ -40,12 +40,29 @@ function removeFromSequence(doc: ReturnType<typeof parseDocument>, path: string[
   if (current instanceof YAMLSeq) current.items = current.items.filter(item => String((item as Scalar).value) !== value);
 }
 
+function pruneEmpty(doc: ReturnType<typeof parseDocument>, path: string[]) {
+  const node = doc.getIn(path, true);
+  if ((node instanceof YAMLSeq || node instanceof YAMLMap) && node.items.length === 0) doc.deleteIn(path);
+}
+
 export async function removeConfig(path: string): Promise<void> {
   const doc = parseDocument(await readFile(path, "utf8"));
   const context = doc.get("context");
-  if (typeof context === "string") doc.set("context", context.split("\n").filter(line => line.trim() !== CONTEXT_LINE).join("\n").trimEnd());
+  if (typeof context === "string") {
+    const kept = context.split("\n").filter(line => line.trim() !== CONTEXT_LINE).join("\n").trimEnd();
+    // Restore the block scalar exactly as install found it, trailing newline included.
+    if (kept) doc.set("context", context.endsWith("\n") ? `${kept}\n` : kept);
+    else doc.delete("context");
+  }
   removeFromSequence(doc, ["rules", "proposal"], PROPOSAL_RULE);
   removeFromSequence(doc, ["rules", "tasks"], TASKS_RULE);
   removeFromSequence(doc, ["operations", "archive", "guidance"], ARCHIVE_GUIDANCE);
+  // Drop containers left empty so removal restores the config install found, deepest first.
+  pruneEmpty(doc, ["rules", "proposal"]);
+  pruneEmpty(doc, ["rules", "tasks"]);
+  pruneEmpty(doc, ["rules"]);
+  pruneEmpty(doc, ["operations", "archive", "guidance"]);
+  pruneEmpty(doc, ["operations", "archive"]);
+  pruneEmpty(doc, ["operations"]);
   await writeFile(path, doc.toString({ lineWidth: 0 }), "utf8");
 }

@@ -4,9 +4,10 @@ import type { RoadmapItem } from "./types.js";
 const STATUSES = new Set(["planned", "ready", "active", "done", "cancelled"]);
 const WORK_STATES = new Set(["available", "blocked", "paused"]);
 
-export function parseRoadmap(markdown: string): { items: RoadmapItem[]; errors: string[] } {
+export function parseRoadmap(source: string): { items: RoadmapItem[]; errors: string[] } {
   const errors: string[] = [];
   const items: RoadmapItem[] = [];
+  const markdown = source.replace(/<!--[\s\S]*?-->/g, "");
   const headings = [...markdown.matchAll(/^###\s+([A-Za-z][A-Za-z0-9_-]*-\d+)\s+[—-]\s+(.+)$/gm)];
   const seen = new Set<string>();
 
@@ -17,7 +18,7 @@ export function parseRoadmap(markdown: string): { items: RoadmapItem[]; errors: 
     const bodyEnd = headings[index + 1]?.index ?? markdown.length;
     const body = markdown.slice(bodyStart, bodyEnd);
     const fields = new Map<string, string>();
-    for (const field of body.matchAll(/^\*\*([^*]+):\*\*\s*(.*?)\s*$/gm)) {
+    for (const field of body.matchAll(/^\*\*([^*]+):\*\*[ \t]*(.*?)[ \t]*$/gm)) {
       fields.set(field[1].trim().toLowerCase(), field[2].trim());
     }
     if (seen.has(id)) errors.push(`${id}: duplicate roadmap id`);

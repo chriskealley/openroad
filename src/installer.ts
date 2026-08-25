@@ -1,5 +1,5 @@
 import { access, copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { dirname, join, relative, resolve } from "node:path";
+import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { mergeConfig, removeConfig } from "./config.js";
 import { MANIFEST_NAME, type Consumer, type Manifest } from "./types.js";
@@ -15,7 +15,8 @@ async function exists(path: string) { try { await access(path); return true; } c
 
 function assetRoot(): string {
   const here = dirname(fileURLToPath(import.meta.url));
-  return here.endsWith("/dist/src") ? resolve(here, "../..") : resolve(here, "..");
+  const built = basename(here) === "src" && basename(dirname(here)) === "dist";
+  return built ? resolve(here, "../..") : resolve(here, "..");
 }
 
 async function packageVersion(): Promise<string> {

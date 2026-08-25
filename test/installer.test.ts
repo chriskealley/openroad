@@ -48,4 +48,7 @@ test("remove preserves roadmap and user config", async () => {
   const config = await readFile(join(root, "openspec/config.yaml"), "utf8");
   assert.match(config, /Existing project context/);
   assert.ok(!config.includes(CONTEXT_LINE));
+  // Removal must not leave behind the empty containers install created.
+  assert.ok(!config.includes("rules:"));
+  assert.ok(!config.includes("operations:"));
 });

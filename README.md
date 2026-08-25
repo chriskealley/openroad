@@ -71,3 +71,31 @@ All commands accept `--root <path>`; the default is the current directory. `init
 ## Roadmap semantics
 
 Lifecycle statuses are `planned`, `ready`, `active`, `done`, and `cancelled`. Only active items have a work state: `available`, `blocked`, or `paused`. Multiple items may be active simultaneously. `openroad-next` selects the eligible ready item with the lowest numeric priority, after checking dependencies, regardless of other blocked or paused active work.
+
+## Development
+
+The CLI is TypeScript compiled to ES modules. Node.js 20 or later is required to build and test; the repository has one runtime dependency (`yaml`) and no build tooling beyond `tsc`.
+
+```sh
+git clone https://github.com/chriskealley/openroad.git
+cd openroad
+npm install
+npm test
+```
+
+| Command | Purpose |
+| --- | --- |
+| `npm run build` | Compile `src/` and `test/` to `dist/` |
+| `npm test` | Build, then run the suite with the Node test runner |
+| `npm run typecheck` | Type-check without emitting output |
+
+Sources live in [src/](src/); `cli.ts` handles argument parsing, `installer.ts` manages the managed-file lifecycle and `.openroad.json` manifest, `config.ts` merges and removes the OpenSpec `config.yaml` guidance, and `roadmap.ts` parses and validates `roadmap.md`. The roadmap template shipped to new projects is [templates/roadmap.md](templates/roadmap.md), and the agent skills are in [skills/](skills/).
+
+Two behaviours are worth preserving when changing the installer or parser, and both are covered by tests: installing and removing must leave an existing `openspec/config.yaml` byte-identical, and the shipped roadmap template must validate cleanly under `openroad doctor`.
+
+To try a change against a real project, pack the tarball and install it rather than linking, so you exercise the same layout users get:
+
+```sh
+npm pack
+npm install --global ./chriskealley-openroad-*.tgz
+```
