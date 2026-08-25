@@ -4,7 +4,7 @@ A companion CLI that connects a project-level roadmap to [OpenSpec](https://open
 
 ## Requirements
 
-- Node.js 20 or later, with npm and `npx` available.
+- Node.js 22 or later, with npm and `npx` available.
 - An existing project initialized with OpenSpec. The project must contain `openspec/config.yaml`, `openspec/specs/`, and `openspec/changes/`.
 - At least one supported agent/tool if you want skills installed automatically: Codex, Pi, Claude, or Cursor.
 - Write access to the target project. A global installation may also require permission to write to npm's global package directory.
@@ -74,7 +74,7 @@ Lifecycle statuses are `planned`, `ready`, `active`, `done`, and `cancelled`. On
 
 ## Development
 
-The CLI is TypeScript compiled to ES modules. Node.js 20 or later is required to build and test; the repository has one runtime dependency (`yaml`) and no build tooling beyond `tsc`.
+The CLI is TypeScript compiled to ES modules. Node.js 22 or later is required to build and test; the repository has one runtime dependency (`yaml`) and no build tooling beyond `tsc`.
 
 ```sh
 git clone https://github.com/chriskealley/openroad.git
