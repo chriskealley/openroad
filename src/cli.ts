@@ -7,7 +7,7 @@ import type { Consumer } from "./types.js";
 const VALID_TOOLS = new Set<Consumer>(["codex", "pi", "claude", "cursor"]);
 
 function usage() {
-  console.log(`openspec-roadmap <command> [options]\n\nCommands:\n  init      Install roadmap integration\n  update    Refresh managed integration files\n  doctor    Validate installation and roadmap\n  remove    Remove integration (preserves roadmap.md)\n\nOptions:\n  --root <path>       Project root (default: current directory)\n  --tools <list>      Comma-separated: codex,pi,claude,cursor`);
+  console.log(`openroad <command> [options]\n\nCommands:\n  init      Install roadmap integration\n  update    Refresh managed integration files\n  doctor    Validate installation and roadmap\n  remove    Remove integration (preserves roadmap.md)\n\nOptions:\n  --root <path>       Project root (default: current directory)\n  --tools <list>      Comma-separated: codex,pi,claude,cursor`);
 }
 
 function option(name: string): string | undefined {
@@ -23,18 +23,18 @@ async function main() {
   const tools = toolsText?.split(",").map(value => value.trim()) as Consumer[] | undefined;
   if (tools?.some(tool => !VALID_TOOLS.has(tool))) throw new Error("Unknown tool in --tools; use codex, pi, claude, or cursor");
   if (command === "init" || command === "update") {
-    if (command === "update" && !await readManifest(root)) throw new Error("Not installed; run `openspec-roadmap init` first");
+    if (command === "update" && !await readManifest(root)) throw new Error("Not installed; run `openroad init` first");
     const manifest = await install(root, tools);
-    console.log(`${command === "init" ? "Installed" : "Updated"} openspec-roadmap for ${manifest.consumers.join(", ") || "no detected skill consumers"}.`);
+    console.log(`${command === "init" ? "Installed" : "Updated"} OpenRoad for ${manifest.consumers.join(", ") || "no detected skill consumers"}.`);
   } else if (command === "doctor") {
     const manifest = await readManifest(root);
-    if (!manifest) throw new Error("Manifest is missing; run `openspec-roadmap init`");
+    if (!manifest) throw new Error("Manifest is missing; run `openroad init`");
     const result = await validateRoadmap(join(root, "openspec/roadmap.md"));
     if (result.errors.length) throw new Error(`Roadmap validation failed:\n- ${result.errors.join("\n- ")}`);
     console.log(`Healthy: ${result.items.length} roadmap item(s), ${manifest.consumers.length} skill consumer(s).`);
   } else if (command === "remove") {
     await remove(root);
-    console.log("Removed openspec-roadmap integration. openspec/roadmap.md was preserved.");
+    console.log("Removed OpenRoad integration. openspec/roadmap.md was preserved.");
   } else throw new Error(`Unknown command: ${command}`);
 }
 

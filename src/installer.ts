@@ -47,7 +47,7 @@ export async function install(root: string, requested?: Consumer[]): Promise<Man
     await copyFile(join(assetRoot(), "templates/roadmap.md"), roadmap);
   }
   files.add(relative(root, roadmap));
-  for (const consumer of consumers) for (const skill of ["openspec-roadmap", "openspec-next"]) {
+  for (const consumer of consumers) for (const skill of ["openroad", "openroad-next"]) {
     const destination = join(root, CONSUMER_DIRS[consumer], skill, "SKILL.md");
     await mkdir(dirname(destination), { recursive: true });
     await copyFile(join(assetRoot(), "skills", skill, "SKILL.md"), destination);
@@ -65,7 +65,7 @@ export async function readManifest(root: string): Promise<Manifest | undefined> 
 
 export async function remove(root: string): Promise<void> {
   const manifest = await readManifest(root);
-  if (!manifest) throw new Error("openspec-roadmap is not installed (manifest not found)");
+  if (!manifest) throw new Error("OpenRoad is not installed (manifest not found)");
   for (const file of manifest.files) if (file !== "openspec/roadmap.md") await rm(join(root, file), { force: true });
   await removeConfig(join(root, "openspec/config.yaml"));
   await rm(join(root, MANIFEST_NAME), { force: true });

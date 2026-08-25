@@ -1,4 +1,4 @@
-# OpenSpec Roadmap
+# OpenRoad
 
 This file coordinates planned work with OpenSpec changes. `Status` is lifecycle; `Work state` only describes whether an active item can proceed. More than one item may be active.
 

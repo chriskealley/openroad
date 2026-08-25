@@ -1,9 +1,9 @@
 {
-  "name": "openspec-roadmap",
+  "name": "@chriskealley/openroad",
   "version": "0.1.0",
   "description": "A roadmap companion for OpenSpec projects",
   "type": "module",
-  "bin": { "openspec-roadmap": "dist/src/cli.js" },
+  "bin": { "openroad": "dist/src/cli.js" },
   "files": ["dist/src", "templates", "skills", "README.md", "LICENSE"],
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -12,6 +12,14 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "keywords": ["openspec", "roadmap", "codex", "cli"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chriskealley/openroad.git"
+  },
+  "bugs": {
+    "url": "https://github.com/chriskealley/openroad/issues"
+  },
+  "homepage": "https://github.com/chriskealley/openroad#readme",
   "engines": { "node": ">=20" },
   "dependencies": { "yaml": "^2.8.1" },
   "devDependencies": {

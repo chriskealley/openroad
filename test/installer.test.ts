@@ -8,14 +8,14 @@ import { ARCHIVE_GUIDANCE, CONTEXT_LINE, PROPOSAL_RULE } from "../src/config.js"
 import { makeOpenSpec } from "./helpers.js";
 
 test("installs roadmap, requested skills, manifest, and merges config", async () => {
-  const root = await mkdtemp(join(tmpdir(), "openspec-roadmap-"));
+  const root = await mkdtemp(join(tmpdir(), "openroad-"));
   await makeOpenSpec(root);
   const manifest = await install(root, ["codex", "pi"]);
   const packageJson = JSON.parse(await readFile(join(process.cwd(), "package.json"), "utf8")) as { version: string };
   assert.deepEqual(manifest.consumers, ["codex", "pi"]);
   assert.equal(manifest.packageVersion, packageJson.version);
   await access(join(root, "openspec/roadmap.md"));
-  await access(join(root, ".codex/skills/openspec-next/SKILL.md"));
+  await access(join(root, ".codex/skills/openroad-next/SKILL.md"));
   const config = await readFile(join(root, "openspec/config.yaml"), "utf8");
   assert.match(config, /Existing project context/);
   assert.ok(config.includes(CONTEXT_LINE));
@@ -24,7 +24,7 @@ test("installs roadmap, requested skills, manifest, and merges config", async ()
 });
 
 test("install and update are idempotent and preserve roadmap edits", async () => {
-  const root = await mkdtemp(join(tmpdir(), "openspec-roadmap-"));
+  const root = await mkdtemp(join(tmpdir(), "openroad-"));
   await makeOpenSpec(root);
   await install(root, ["claude"]);
   const roadmapPath = join(root, "openspec/roadmap.md");
@@ -39,7 +39,7 @@ test("install and update are idempotent and preserve roadmap edits", async () =>
 });
 
 test("remove preserves roadmap and user config", async () => {
-  const root = await mkdtemp(join(tmpdir(), "openspec-roadmap-"));
+  const root = await mkdtemp(join(tmpdir(), "openroad-"));
   await makeOpenSpec(root);
   await install(root, ["cursor"]);
   await remove(root);
