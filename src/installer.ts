@@ -1,5 +1,5 @@
 import { access, copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { basename, dirname, join, relative, resolve } from "node:path";
+import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { mergeConfig, removeConfig } from "./config.js";
 import { MANIFEST_NAME, type Consumer, type Manifest } from "./types.js";
@@ -12,6 +12,19 @@ const CONSUMER_DIRS: Record<Consumer, string> = {
 };
 
 async function exists(path: string) { try { await access(path); return true; } catch { return false; } }
+
+const ROADMAP_FILE = "openspec/roadmap.md";
+
+// Manifests are recorded with POSIX separators so they stay portable and so the
+// roadmap guard in remove() matches on Windows, where relative() yields backslashes.
+function manifestPath(root: string, target: string): string {
+  return relative(root, target).split(sep).join("/");
+}
+
+// Exported for tests: the guard that keeps remove() from deleting the roadmap.
+export function isRoadmapEntry(file: string): boolean {
+  return file.split("\\").join("/") === ROADMAP_FILE;
+}
 
 function assetRoot(): string {
   const here = dirname(fileURLToPath(import.meta.url));
@@ -47,12 +60,12 @@ export async function install(root: string, requested?: Consumer[]): Promise<Man
   if (!await exists(roadmap)) {
     await copyFile(join(assetRoot(), "templates/roadmap.md"), roadmap);
   }
-  files.add(relative(root, roadmap));
+  files.add(manifestPath(root, roadmap));
   for (const consumer of consumers) for (const skill of ["openroad", "openroad-next"]) {
     const destination = join(root, CONSUMER_DIRS[consumer], skill, "SKILL.md");
     await mkdir(dirname(destination), { recursive: true });
     await copyFile(join(assetRoot(), "skills", skill, "SKILL.md"), destination);
-    files.add(relative(root, destination));
+    files.add(manifestPath(root, destination));
   }
   await mergeConfig(config);
   const manifest: Manifest = { schemaVersion: 1, packageVersion: await packageVersion(), installedAt: prior?.installedAt ?? new Date().toISOString(), consumers, files: [...files].sort() };
@@ -67,7 +80,8 @@ export async function readManifest(root: string): Promise<Manifest | undefined> 
 export async function remove(root: string): Promise<void> {
   const manifest = await readManifest(root);
   if (!manifest) throw new Error("OpenRoad is not installed (manifest not found)");
-  for (const file of manifest.files) if (file !== "openspec/roadmap.md") await rm(join(root, file), { force: true });
+  // toPosix also normalises manifests written by earlier versions on Windows.
+  for (const file of manifest.files) if (!isRoadmapEntry(file)) await rm(join(root, file), { force: true });
   await removeConfig(join(root, "openspec/config.yaml"));
   await rm(join(root, MANIFEST_NAME), { force: true });
 }

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtemp, readFile, access } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { install, readManifest, remove } from "../src/installer.js";
+import { install, isRoadmapEntry, readManifest, remove } from "../src/installer.js";
 import { ARCHIVE_GUIDANCE, CONTEXT_LINE, PROPOSAL_RULE } from "../src/config.js";
 import { makeOpenSpec } from "./helpers.js";
 
@@ -51,4 +51,21 @@ test("remove preserves roadmap and user config", async () => {
   // Removal must not leave behind the empty containers install created.
   assert.ok(!config.includes("rules:"));
   assert.ok(!config.includes("operations:"));
+});
+
+test("manifest records portable POSIX paths", async () => {
+  const root = await mkdtemp(join(tmpdir(), "openroad-"));
+  await makeOpenSpec(root);
+  const manifest = await install(root, ["claude"]);
+  for (const file of manifest.files) assert.ok(!file.includes("\\"), `manifest path is not POSIX: ${file}`);
+  assert.ok(manifest.files.includes("openspec/roadmap.md"));
+});
+
+test("the roadmap guard matches both separator styles", () => {
+  // relative() yields backslashes on Windows; an unnormalised guard deleted the
+  // one file remove() promises to preserve.
+  assert.ok(isRoadmapEntry("openspec/roadmap.md"));
+  assert.ok(isRoadmapEntry("openspec\\roadmap.md"));
+  assert.ok(!isRoadmapEntry("openspec/specs/roadmap.md"));
+  assert.ok(!isRoadmapEntry(".claude/skills/openroad/SKILL.md"));
 });
