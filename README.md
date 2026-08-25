@@ -2,17 +2,62 @@
 
 A companion CLI that connects a project-level roadmap to [OpenSpec](https://openspec.dev/) without forking OpenSpec or modifying its generated skills.
 
-## Install in an OpenSpec project
+## Requirements
 
-Initialize OpenSpec first, then run:
+- Node.js 20 or later, with npm and `npx` available.
+- An existing project initialized with OpenSpec. The project must contain `openspec/config.yaml`, `openspec/specs/`, and `openspec/changes/`.
+- At least one supported agent/tool if you want skills installed automatically: Codex, Pi, Claude, or Cursor.
+- Write access to the target project. A global installation may also require permission to write to npm's global package directory.
+
+Initialize OpenSpec in the target project before installing this integration:
+
+```sh
+cd path/to/your-project
+openspec init
+```
+
+## Run with npx
+
+You can run the CLI without installing it globally:
 
 ```sh
 npx openspec-roadmap init --tools codex,pi,claude,cursor
 ```
 
-If `--tools` is omitted, existing `.codex`, `.pi`, `.claude`, and `.cursor` directories are detected. The installer creates `openspec/roadmap.md`, installs the `openspec-roadmap` and `openspec-next` skills, adds narrowly scoped context/rules/archive guidance to `openspec/config.yaml`, and records managed files in `.openspec-roadmap.json`.
+To install only for Codex, for example:
 
-Commands:
+```sh
+npx openspec-roadmap init --tools codex
+```
+
+## Install globally
+
+Install the CLI globally if you plan to use it across several OpenSpec projects:
+
+```sh
+npm install --global openspec-roadmap
+```
+
+Then run it from the root of an initialized OpenSpec project:
+
+```sh
+openspec-roadmap init --tools codex,pi,claude,cursor
+```
+
+If npm reports a permissions error during global installation, configure an npm-managed user-level global directory or use the `npx` option above; avoid running npm with `sudo`.
+
+## What installation changes
+
+If `--tools` is omitted, the CLI detects existing `.codex`, `.pi`, `.claude`, and `.cursor` directories. It then:
+
+- Creates `openspec/roadmap.md` if it does not already exist.
+- Installs the `openspec-roadmap` and `openspec-next` skills for each selected tool.
+- Adds narrowly scoped context, rules, and archive guidance to `openspec/config.yaml`.
+- Records managed files in `.openspec-roadmap.json` so updates and removal are safe.
+
+Existing roadmap content is preserved during updates. Removal preserves `openspec/roadmap.md` and removes only this package's exact configuration guidance and managed skill files.
+
+## Commands
 
 ```sh
 openspec-roadmap init
@@ -21,7 +66,7 @@ openspec-roadmap doctor
 openspec-roadmap remove
 ```
 
-All commands accept `--root <path>`. `init` and `update` accept `--tools <comma-separated-list>`. Updates preserve roadmap content. Removal preserves `openspec/roadmap.md` and removes only this package's exact config guidance and managed skill files.
+All commands accept `--root <path>`; the default is the current directory. `init` and `update` accept `--tools <comma-separated-list>` using any combination of `codex`, `pi`, `claude`, and `cursor`.
 
 ## Roadmap semantics
 

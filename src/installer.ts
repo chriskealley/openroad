@@ -2,7 +2,7 @@ import { access, copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promis
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { mergeConfig, removeConfig } from "./config.js";
-import { MANIFEST_NAME, PACKAGE_VERSION, type Consumer, type Manifest } from "./types.js";
+import { MANIFEST_NAME, type Consumer, type Manifest } from "./types.js";
 
 const CONSUMER_DIRS: Record<Consumer, string> = {
   codex: ".codex/skills",
@@ -16,6 +16,12 @@ async function exists(path: string) { try { await access(path); return true; } c
 function assetRoot(): string {
   const here = dirname(fileURLToPath(import.meta.url));
   return here.endsWith("/dist/src") ? resolve(here, "../..") : resolve(here, "..");
+}
+
+async function packageVersion(): Promise<string> {
+  const packageJson = JSON.parse(await readFile(join(assetRoot(), "package.json"), "utf8")) as { version?: unknown };
+  if (typeof packageJson.version !== "string") throw new Error("Package version is missing from package.json");
+  return packageJson.version;
 }
 
 export async function detectConsumers(root: string): Promise<Consumer[]> {
@@ -48,7 +54,7 @@ export async function install(root: string, requested?: Consumer[]): Promise<Man
     files.add(relative(root, destination));
   }
   await mergeConfig(config);
-  const manifest: Manifest = { schemaVersion: 1, packageVersion: PACKAGE_VERSION, installedAt: prior?.installedAt ?? new Date().toISOString(), consumers, files: [...files].sort() };
+  const manifest: Manifest = { schemaVersion: 1, packageVersion: await packageVersion(), installedAt: prior?.installedAt ?? new Date().toISOString(), consumers, files: [...files].sort() };
   await writeFile(join(root, MANIFEST_NAME), JSON.stringify(manifest, null, 2) + "\n");
   return manifest;
 }

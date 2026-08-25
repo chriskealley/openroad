@@ -11,7 +11,9 @@ test("installs roadmap, requested skills, manifest, and merges config", async ()
   const root = await mkdtemp(join(tmpdir(), "openspec-roadmap-"));
   await makeOpenSpec(root);
   const manifest = await install(root, ["codex", "pi"]);
+  const packageJson = JSON.parse(await readFile(join(process.cwd(), "package.json"), "utf8")) as { version: string };
   assert.deepEqual(manifest.consumers, ["codex", "pi"]);
+  assert.equal(manifest.packageVersion, packageJson.version);
   await access(join(root, "openspec/roadmap.md"));
   await access(join(root, ".codex/skills/openspec-next/SKILL.md"));
   const config = await readFile(join(root, "openspec/config.yaml"), "utf8");

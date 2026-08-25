@@ -1,5 +1,4 @@
 export const MANIFEST_NAME = ".openspec-roadmap.json";
-export const PACKAGE_VERSION = "0.1.0";
 
 export type Consumer = "codex" | "pi" | "claude" | "cursor";
 
